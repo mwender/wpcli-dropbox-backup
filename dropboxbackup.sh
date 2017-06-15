@@ -23,7 +23,7 @@
 # Finally, you'll need to setup a cron to call this script
 # daily. Example:
 #
-# 0 30 * * * bash ~/dropboxbackup.sh >/dev/null 2>&1 # Runs every day at 12:30am
+# 30 0 * * * bash ~/dropboxbackup.sh >/dev/null 2>&1 # Runs every day at 12:30am
 #
 # Credit: https://guides.wp-bullet.com/automatically-back-wordpress-dropbox-wp-cli-bash-script/
 
