@@ -62,7 +62,8 @@ for SITE in ${SITELIST[@]}; do
     cd $SITESTORE/$SITE/public
 
     # This script only backs up WordPress installs
-    if ! $(wp core is-installed); then
+    if ! $(wp core is-installed 2>/dev/null); then
+        echo "$SITE is not a WordPress install, continuing with next site..."
         continue
     fi
 
