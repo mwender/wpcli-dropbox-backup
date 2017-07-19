@@ -27,14 +27,17 @@
 #
 # Credit: https://guides.wp-bullet.com/automatically-back-wordpress-dropbox-wp-cli-bash-script/
 
+# Get current directory (not bulletproof, source: http://www.ostricher.com/2014/10/the-right-way-to-get-the-directory-of-a-bash-script/)
+PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 # Check for `dropboxbackup-config.sh`
-if ! $(source dropboxbackup-config.sh 2>/dev/null); then
+if ! $(source $PWD/dropboxbackup-config.sh 2>/dev/null); then
     echo 'ERROR: No configuration found!. Please setup `dropboxbackup-config.sh` with your BACKUPPATH and SITESTORE vars.'
     exit
 fi
 
 # Load the configuration
-source dropboxbackup-config.sh
+source $PWD/dropboxbackup-config.sh
 
 #date prefix
 DATEFORM=$(date +"%Y-%m-%d")
