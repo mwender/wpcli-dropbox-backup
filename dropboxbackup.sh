@@ -54,15 +54,15 @@ mkdir -p $BACKUPPATH
 #start the loop
 for SITE in ${SITELIST[@]}; do
     # check if there are old backups and delete them
-    EXISTS=$(dropbox_uploader list /$SITE | grep -E $DAYSKEPT.*.tar.gz | awk '{print $3}')
+    EXISTS=$(dropbox_uploader -f $USERPATH/$DROPBOXCONFIG list /$SITE | grep -E $DAYSKEPT.*.tar.gz | awk '{print $3}')
     if [ ! -z $EXISTS ]; then
-        dropbox_uploader delete /$SITE/$DAYSKEPT-$SITE.tar.gz /$SITE/
-        dropbox_uploader delete /$SITE/$DAYSKEPT-$SITE.sql.gz /$SITE/
+        dropbox_uploader -f $USERPATH/$DROPBOXCONFIG delete /$SITE/$DAYSKEPT-$SITE.tar.gz /$SITE/
+        dropbox_uploader -f $USERPATH/$DROPBOXCONFIG delete /$SITE/$DAYSKEPT-$SITE.sql.gz /$SITE/
     fi
 
     echo Backing up $SITE
     #enter the WordPress folder
-    cd $SITESTORE/$SITE/public
+    cd $SITESTORE/$SITE/$WEBROOT
 
     # This script only backs up WordPress installs
     if ! $(wp core is-installed 2>/dev/null); then
@@ -83,8 +83,8 @@ for SITE in ${SITELIST[@]}; do
     rm $BACKUPPATH/$SITE/$DATEFORM-$SITE.sql
 
     #upload packages
-    dropbox_uploader upload $BACKUPPATH/$SITE/$DATEFORM-$SITE.tar.gz /$SITE/
-    dropbox_uploader upload $BACKUPPATH/$SITE/$DATEFORM-$SITE.sql.gz /$SITE/
+    dropbox_uploader -f $USERPATH/$DROPBOXCONFIG upload $BACKUPPATH/$SITE/$DATEFORM-$SITE.tar.gz /$SITE/
+    dropbox_uploader -f $USERPATH/$DROPBOXCONFIG upload $BACKUPPATH/$SITE/$DATEFORM-$SITE.sql.gz /$SITE/
 
     #remove backup
     rm -rf $BACKUPPATH/$SITE
