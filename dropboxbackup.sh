@@ -6,8 +6,11 @@
 # to Dropbox. Configure this script by including a file named
 # `dropboxbackup-config.sh` with the following variables:
 #
+# - DROPBOXCONFIG=.dropbox_uploader
+# - USERPATH=/home/dir/for/user
 # - BACKUPPATH=/local/path/to/backups
 # - SITESTORE=/path/to/WordPress/installations
+# - WEBROOT=public
 # - DAYSKEEP=3
 #
 # This script requires dropbox_uploader to be installed. If you
