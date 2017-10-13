@@ -1,6 +1,12 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #
-# WP-CLI Dropbox Backup
+# # WP-CLI Dropbox Backup
+#
+# ## Options
+#
+# -s | --sites  @string Filename containing a list of sites (i.e. directories) to backup, one per line. Overrides $SITESTORE inside .dropboxbackup-config.sh.
+#
+# ## Configuration
 #
 # Utilizes WP-CLI to backup your WordPress sites and upload them
 # to Dropbox. Configure this script by including a file named
@@ -12,6 +18,8 @@
 # - SITESTORE=/path/to/WordPress/installations
 # - WEBROOT=public
 # - DAYSKEEP=3
+#
+# ## Details
 #
 # This script requires dropbox_uploader to be installed. If you
 # need to add it to your setup, do the following:
@@ -30,12 +38,30 @@
 #
 # Credit: https://guides.wp-bullet.com/automatically-back-wordpress-dropbox-wp-cli-bash-script/
 
+# Process args
+while [[ $# -gt 1 ]]
+do
+    key="$1"
+
+    case $key in
+        -s|--sites)
+        SITES="$2"
+        shift
+        ;;
+        *)
+
+        ;;
+    esac
+done
+echo SITES = "${SITES}"
+
+
 # Get current directory (not bulletproof, source: http://www.ostricher.com/2014/10/the-right-way-to-get-the-directory-of-a-bash-script/)
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Check for `dropboxbackup-config.sh`
 if ! $(source $PWD/dropboxbackup-config.sh 2>/dev/null); then
-    echo 'ERROR: No configuration found!. Please setup `dropboxbackup-config.sh` with your BACKUPPATH and SITESTORE vars.'
+    echo 'ERROR: No configuration found! Please setup `dropboxbackup-config.sh`.'
     exit
 fi
 
@@ -48,8 +74,14 @@ DATEFORM=$(date +"%Y-%m-%d")
 #calculate days as filename prefix
 DAYSKEPT=$(date +"%Y-%m-%d" -d "-$DAYSKEEP days")
 
-#create array of sites based on folder names
-SITELIST=($(ls -lh $SITESTORE | awk '{print $9}'))
+# Get our list of sites
+if [ ! -z $SITES ]; then
+    # read in an array of sites from our SITES file
+    SITELIST=$(cat $SITES)
+else
+    #create array of sites based on folder names
+    SITELIST=($(ls -lh $SITESTORE | awk '{print $9}'))
+fi
 
 #make sure the backup folder exists
 mkdir -p $BACKUPPATH
