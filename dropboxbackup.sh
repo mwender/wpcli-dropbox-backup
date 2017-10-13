@@ -4,7 +4,8 @@
 #
 # ## Options
 #
-# -s | --sites  @string Filename containing a list of sites (i.e. directories) to backup, one per line. Overrides $SITESTORE inside .dropboxbackup-config.sh.
+# -s | --sites  @string (Optional) Filename containing a list of sites (i.e. directories) to backup, one per line. Overrides $SITESTORE inside .dropboxbackup-config.sh.
+# -f | --folder @string (Optional) Dropbox sub-folder name
 #
 # ## Configuration
 #
@@ -39,22 +40,24 @@
 # Credit: https://guides.wp-bullet.com/automatically-back-wordpress-dropbox-wp-cli-bash-script/
 
 # Process args
-while [[ $# -gt 1 ]]
+while [ -n "$1" ]
 do
     key="$1"
 
-    case $key in
+    case "$1" in
         -s|--sites)
-        SITES="$2"
-        shift
-        ;;
+            SITES="$2"
+            echo "Note: I'll look for your SITES in: $SITES"
+        shift ;;
+        -f|--folder)
+            FOLDER="$2"
+            echo "Note: I'll upload your backups to this sub-folder: /$FOLDER/"
+        shift ;;
         *)
-
-        ;;
+            echo "$1 is not an option.";;
     esac
+    shift
 done
-echo SITES = "${SITES}"
-
 
 # Get current directory (not bulletproof, source: http://www.ostricher.com/2014/10/the-right-way-to-get-the-directory-of-a-bash-script/)
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -88,11 +91,18 @@ mkdir -p $BACKUPPATH
 
 #start the loop
 for SITE in ${SITELIST[@]}; do
+    # Build our Dropbox upload path
+    if [ ! -z $FOLDER ]; then
+        DROPBOXPATH=/$FOLDER/$SITE
+    else
+        DROPBOXPATH=/$SITE
+    fi
+
     # check if there are old backups and delete them
-    EXISTS=$(dropbox_uploader -f $USERPATH/$DROPBOXCONFIG list /$SITE | grep -E $DAYSKEPT.*.tar.gz | awk '{print $3}')
+    EXISTS=$(dropbox_uploader -f $USERPATH/$DROPBOXCONFIG list $DROPBOXPATH | grep -E $DAYSKEPT.*.tar.gz | awk '{print $3}')
     if [ ! -z $EXISTS ]; then
-        dropbox_uploader -f $USERPATH/$DROPBOXCONFIG delete /$SITE/$DAYSKEPT-$SITE.tar.gz /$SITE/
-        dropbox_uploader -f $USERPATH/$DROPBOXCONFIG delete /$SITE/$DAYSKEPT-$SITE.sql.gz /$SITE/
+        dropbox_uploader -f $USERPATH/$DROPBOXCONFIG delete $DROPBOXPATH/$DAYSKEPT-$SITE.tar.gz #/$SITE/ - not sure why these are here?
+        dropbox_uploader -f $USERPATH/$DROPBOXCONFIG delete $DROPBOXPATH/$DAYSKEPT-$SITE.sql.gz #/$SITE/
     fi
 
     echo Backing up $SITE
@@ -118,8 +128,8 @@ for SITE in ${SITELIST[@]}; do
     rm $BACKUPPATH/$SITE/$DATEFORM-$SITE.sql
 
     #upload packages
-    dropbox_uploader -f $USERPATH/$DROPBOXCONFIG upload $BACKUPPATH/$SITE/$DATEFORM-$SITE.tar.gz /$SITE/
-    dropbox_uploader -f $USERPATH/$DROPBOXCONFIG upload $BACKUPPATH/$SITE/$DATEFORM-$SITE.sql.gz /$SITE/
+    dropbox_uploader -f $USERPATH/$DROPBOXCONFIG upload $BACKUPPATH/$SITE/$DATEFORM-$SITE.tar.gz $DROPBOXPATH/
+    dropbox_uploader -f $USERPATH/$DROPBOXCONFIG upload $BACKUPPATH/$SITE/$DATEFORM-$SITE.sql.gz $DROPBOXPATH/
 
     #remove backup
     rm -rf $BACKUPPATH/$SITE
