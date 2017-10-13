@@ -2,3 +2,4 @@ dropboxbackup-config.sh
 *.log
 backups/
 *.sublime-*
+*sitelist*
